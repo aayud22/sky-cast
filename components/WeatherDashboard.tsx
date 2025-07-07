@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { MapPin, Navigation, Search } from "lucide-react";
 import SearchBar from "./SearchBar";
 import { Error } from "./common/Error";
 import ThemeToggle from "./ThemeToggle";
@@ -10,6 +9,7 @@ import { WeatherData } from "@/models/weather";
 import MainWeatherCard from "./MainWeatherCard";
 import type { DailyForecast } from "./ForecastCard";
 import OtherCountriesCard from "./OtherCountriesCard";
+import { MapPin, Navigation, Search } from "lucide-react";
 
 // Minimal type for OpenWeatherMap response (expand as needed)
 interface WeatherError {
