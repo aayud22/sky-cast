@@ -51,9 +51,10 @@ export default function WeatherDashboard() {
         return;
       }
       // Check if we already have a permission state
-      navigator.permissions?.query({ name: 'geolocation' })
-        .then(permissionStatus => {
-          if (permissionStatus.state === 'granted') {
+      navigator.permissions
+        ?.query({ name: "geolocation" })
+        .then((permissionStatus) => {
+          if (permissionStatus.state === "granted") {
             // If already granted, get the position
             navigator.geolocation.getCurrentPosition(
               (position) => {
@@ -67,7 +68,7 @@ export default function WeatherDashboard() {
                 setLocationPermission("denied");
               }
             );
-          } else if (permissionStatus.state === 'denied') {
+          } else if (permissionStatus.state === "denied") {
             setLocationPermission("denied");
           } else {
             // If prompt, request permission
@@ -84,10 +85,10 @@ export default function WeatherDashboard() {
               }
             );
           }
-          
+
           // Listen for permission changes
           permissionStatus.onchange = () => {
-            if (permissionStatus.state === 'granted') {
+            if (permissionStatus.state === "granted") {
               setLocationPermission("granted");
             } else {
               setLocationPermission("denied");
@@ -175,7 +176,7 @@ export default function WeatherDashboard() {
   const requestLocation = async () => {
     setLocationPermission("pending");
     setError(null);
-    
+
     if (!navigator.geolocation) {
       setLocationPermission("denied");
       setError("Geolocation is not supported by your browser.");
@@ -184,10 +185,12 @@ export default function WeatherDashboard() {
 
     try {
       // First check the current permission state
-      const permissionStatus = await navigator.permissions?.query({ name: 'geolocation' });
-      
+      const permissionStatus = await navigator.permissions?.query({
+        name: "geolocation",
+      });
+
       // If permission is already granted, get the position
-      if (permissionStatus?.state === 'granted') {
+      if (permissionStatus?.state === "granted") {
         navigator.geolocation.getCurrentPosition(
           (position) => {
             setLocationPermission("granted");
@@ -198,7 +201,9 @@ export default function WeatherDashboard() {
           },
           () => {
             setLocationPermission("denied");
-            setError("Could not determine your location. Please try again or search for a city.");
+            setError(
+              "Could not determine your location. Please try again or search for a city."
+            );
           },
           { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
         );
@@ -206,15 +211,19 @@ export default function WeatherDashboard() {
       }
 
       // If permission was previously denied, we need to guide user to browser settings
-      if (permissionStatus?.state === 'denied') {
+      if (permissionStatus?.state === "denied") {
         // Check if we can request permission again (some browsers allow this)
         try {
-          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject, 
-              { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-            );
-          });
-          
+          const position = await new Promise<GeolocationPosition>(
+            (resolve, reject) => {
+              navigator.geolocation.getCurrentPosition(resolve, reject, {
+                enableHighAccuracy: true,
+                timeout: 5000,
+                maximumAge: 0,
+              });
+            }
+          );
+
           setLocationPermission("granted");
           setUsedCoords({
             lat: position.coords.latitude,
@@ -222,14 +231,18 @@ export default function WeatherDashboard() {
           });
           return;
         } catch (error) {
+          console.error("Location error:", error);
           // If we get here, permission is blocked at the browser level
           setLocationPermission("denied");
           setError(
             <span>
-              Location permission is blocked. Please enable it in your browser settings or search for a city.
+              Location permission is blocked. Please enable it in your browser
+              settings or search for a city.
               <br />
-              <button 
-                onClick={() => window.open('chrome://settings/content/location', '_blank')} 
+              <button
+                onClick={() =>
+                  window.open("chrome://settings/content/location", "_blank")
+                }
                 className="text-blue-500 hover:underline mt-2 inline-block"
               >
                 Open Browser Settings
@@ -241,32 +254,43 @@ export default function WeatherDashboard() {
       }
 
       // If permission is prompt or we couldn't check, request it
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(
-          resolve,
-          reject,
-          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
-        );
-      });
-      
+      const position = await new Promise<GeolocationPosition>(
+        (resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0,
+          });
+        }
+      );
+
       setLocationPermission("granted");
       setUsedCoords({
         lat: position.coords.latitude,
         lon: position.coords.longitude,
       });
-      
     } catch (error) {
       setLocationPermission("denied");
       const geolocationError = error as GeolocationPositionError;
-      
+
       if (geolocationError.code === geolocationError.PERMISSION_DENIED) {
-        setError("Location permission was denied. Please allow access or search for a city.");
-      } else if (geolocationError.code === geolocationError.POSITION_UNAVAILABLE) {
-        setError("Location information is unavailable. Please try again or search for a city.");
+        setError(
+          "Location permission was denied. Please allow access or search for a city."
+        );
+      } else if (
+        geolocationError.code === geolocationError.POSITION_UNAVAILABLE
+      ) {
+        setError(
+          "Location information is unavailable. Please try again or search for a city."
+        );
       } else if (geolocationError.code === geolocationError.TIMEOUT) {
-        setError("Location request timed out. Please try again or search for a city.");
+        setError(
+          "Location request timed out. Please try again or search for a city."
+        );
       } else {
-        setError("Could not determine your location. Please try again or search for a city.");
+        setError(
+          "Could not determine your location. Please try again or search for a city."
+        );
       }
     }
   };
@@ -279,14 +303,18 @@ export default function WeatherDashboard() {
           <div className="w-20 h-20 bg-gradient-to-br from-blue-100 to-blue-50 dark:from-blue-900/30 dark:to-blue-950/50 rounded-2xl flex items-center justify-center mb-6 shadow-inner">
             <MapPin className="w-10 h-10 text-blue-500 dark:text-blue-400" />
           </div>
-          
-          <h2 className="text-2xl font-bold text-foreground mb-3">Location Access Required</h2>
+
+          <h2 className="text-2xl font-bold text-foreground mb-3">
+            Location Access Required
+          </h2>
           <p className="text-muted-foreground mb-8 max-w-md leading-relaxed">
-            To provide you with accurate local weather information, we need access to your location. Please allow the browser permission when prompted.
+            To provide you with accurate local weather information, we need
+            access to your location. Please allow the browser permission when
+            prompted.
           </p>
-          
+
           <div className="flex flex-col w-full gap-3">
-            <Button 
+            <Button
               onClick={requestLocation}
               className="gap-2 h-12 text-base font-medium transition-all duration-200 hover:shadow-lg"
               size="lg"
@@ -294,8 +322,8 @@ export default function WeatherDashboard() {
               <Navigation className="w-5 h-5" />
               Allow Location Access
             </Button>
-            
-            <Button 
+
+            <Button
               variant="outline"
               onClick={() => {
                 setLocationPermission("denied");
@@ -308,7 +336,7 @@ export default function WeatherDashboard() {
               Search by City Instead
             </Button>
           </div>
-          
+
           <p className="text-xs text-muted-foreground mt-6 opacity-70">
             You can change this later in your browser settings
           </p>
@@ -341,21 +369,24 @@ export default function WeatherDashboard() {
           />
           <ThemeToggle />
         </div>
-        
-        {locationPermission === "denied" && !weatherData && !loading && renderLocationPrompt()}
-        
+
+        {locationPermission === "denied" &&
+          !weatherData &&
+          !loading &&
+          renderLocationPrompt()}
+
         {loading ? (
           <WeatherLoader />
         ) : error ? (
-          <Error 
-            message={error} 
+          <Error
+            message={String(error)}
             onRetry={() => {
               if (locationPermission === "denied") {
                 requestLocation();
               } else {
                 window.location.reload();
               }
-            }} 
+            }}
           />
         ) : isWeatherData(weatherData) ? (
           <>
