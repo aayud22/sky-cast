@@ -3,7 +3,6 @@ import SearchBar from "./SearchBar";
 import { Error } from "./common/Error";
 import ThemeToggle from "./ThemeToggle";
 import ForecastCard from "./ForecastCard";
-import WeatherLoader from "./WeatherLoader";
 import { WeatherData } from "@/models/weather";
 import MainWeatherCard from "./MainWeatherCard";
 import type { DailyForecast } from "./ForecastCard";
@@ -206,7 +205,9 @@ export default function WeatherDashboard() {
     setForecastData([]);
     setError(null);
     setLocationPermission("pending");
-  }, []);
+    // Request location again to show weather for current location
+    requestLocation();
+  }, [requestLocation]);
 
   const handleRetry = useCallback(() => {
     if (locationPermission === "denied") {
@@ -226,12 +227,14 @@ export default function WeatherDashboard() {
     requestLocation,
   ]);
 
+  // Smooth transition for content appearance
+  const contentOpacity =
+    !loading && isWeatherData(weatherData) ? "opacity-100" : "opacity-0";
+  const contentTransform =
+    !loading && isWeatherData(weatherData) ? "translate-y-0" : "translate-y-4";
+
   return (
-    <div
-      className={`min-h-screen text-foreground md:px-4 py-8 flex flex-col items-center ${
-        !weatherData || error || loading ? "justify-start" : "justify-center"
-      }`}
-    >
+    <div className="min-h-screen text-foreground md:px-4 py-8 flex flex-col items-center">
       <div className="w-full max-w-7xl">
         <div className="flex justify-end gap-2 items-center mb-6">
           <SearchBar
@@ -243,25 +246,47 @@ export default function WeatherDashboard() {
           <ThemeToggle />
         </div>
 
-        {loading ? (
-          <WeatherLoader />
-        ) : error ? (
-          <Error message={error} onRetry={handleRetry} />
-        ) : isWeatherData(weatherData) ? (
-          <>
+        {error && (
+          <div className="transition-opacity duration-300">
+            <Error message={error} onRetry={handleRetry} />
+          </div>
+        )}
+
+        <div
+          className={`transition-all duration-500 ease-out ${contentOpacity} ${contentTransform}`}
+        >
+          {isWeatherData(weatherData) && (
+            <>
+              <div className="flex flex-col md:flex-row gap-8 w-full">
+                <div className="w-full md:w-3/4 max-w-full">
+                  <MainWeatherCard data={weatherData} />
+                </div>
+                <div className="w-full md:w-[312px] max-w-full">
+                  <ForecastCard forecast={forecastData} />
+                </div>
+              </div>
+              <div className="mt-8 w-full transition-opacity duration-300">
+                <OtherCountriesCard />
+              </div>
+            </>
+          )}
+        </div>
+
+        {loading && (
+          <div className="w-full transition-opacity duration-300">
             <div className="flex flex-col md:flex-row gap-8 w-full">
               <div className="w-full md:w-3/4 max-w-full">
-                <MainWeatherCard data={weatherData} />
+                <div className="bg-muted/30 rounded-2xl h-96 animate-pulse"></div>
               </div>
               <div className="w-full md:w-[312px] max-w-full">
-                <ForecastCard forecast={forecastData} />
+                <div className="bg-muted/30 rounded-2xl h-96 animate-pulse"></div>
               </div>
             </div>
             <div className="mt-8 w-full">
-              <OtherCountriesCard />
+              <div className="bg-muted/30 rounded-2xl h-48 animate-pulse"></div>
             </div>
-          </>
-        ) : null}
+          </div>
+        )}
       </div>
     </div>
   );
