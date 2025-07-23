@@ -16,6 +16,7 @@ export default function SearchBar({
   return (
     <div className="flex items-center bg-secondary rounded-full px-3.5 w-full max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl transition-all py-1">
       <input
+        autoFocus
         type="text"
         value={searchValue}
         placeholder="Search your location"
